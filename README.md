@@ -230,10 +230,17 @@ try {
 
 **MIT** — Free for everyone! 🎉
 
-## 🎊 Acknowledgments
+## 🎊 Acknowledgements
 
-- ⭐ Star the project on GitHub
-- 🐛 Report issues
-- 💡 Suggest new features
+Thank you for using **Acchio**! If you liked it, don’t forget to:
+
+- ⭐ [Star the project on GitHub](https://github.com/fernandosoares/acchio)
+- 🐛 [Report issues](https://github.com/fernandosoares/acchio/issues)
+- 💡 [Suggest new features](https://github.com/fernandosoares/acchio/issues/new?template=feature_request.md)
 
 _"Because HTTP requests should feel magical, not complicated!" 🎩✨_
+
+🔗 **Project Links**
+
+- GitHub: [https://github.com/fernandosoares/acchio](https://github.com/fernandosoares/acchio)
+- NPM: [https://www.npmjs.com/package/acchio](https://www.npmjs.com/package/acchio)
