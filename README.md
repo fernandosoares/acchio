@@ -1,14 +1,40 @@
 # ⚡ Acchio
 
-Um cliente HTTP elegante e poderoso para **Node.js** e **browsers**, inspirado no **Axios**, mas com uma pitada de **magia! ✨**
+An elegant and powerful HTTP client for Node.js and browsers — inspired by Axios, with a touch of magic! ✨
 
-![npm](https://img.shields.io/npm/v/acchio)
-![downloads](https://img.shields.io/npm/dm/acchio)
-![license](https://img.shields.io/npm/l/acchio)
+![npm version](https://img.shields.io/npm/v/acchio?style=flat-square)
+![npm downloads](https://img.shields.io/npm/dm/acchio?style=flat-square)
+![license](https://img.shields.io/npm/l/acchio?style=flat-square)
+![types](https://img.shields.io/badge/types-TypeScript-blue?style=flat-square)
 
 ---
 
-## 🚀 Instalação
+> **Acchio** is a modern, fully typed, zero-dependency HTTP client with native support for **interceptors**, **request cancellation**, **XML**, and compatibility with both **Node.js and browsers**.
+>
+> Because HTTP requests should feel _magical_, not complicated! 🎩✨
+
+---
+
+## 📚 Table of Contents
+
+- [🚀 Installation](#-installation)
+- [💡 Why Acchio?](#-why-acchio)
+- [🎯 Basic Usage](#-basic-usage)
+- [📋 Request Configuration](#-request-configuration)
+- [🔧 Interceptors](#-interceptors)
+- [🚫 Request Cancellation](#-request-cancellation)
+- [🌐 XML Support](#-xml-support)
+- [🎨 Global Configuration](#-global-configuration)
+- [🚦 HTTP Methods](#-http-methods)
+- [🎪 TypeScript Support](#-typescript-support)
+- [🔄 Environment Examples](#-environment-examples)
+- [🚨 Error Handling](#-error-handling)
+- [📊 Comparison](#-quick-comparison)
+- [📄 License](#-license)
+
+---
+
+## 🚀 Installation
 
 ```bash
 # npm
@@ -19,213 +45,195 @@ yarn add acchio
 
 # pnpm
 pnpm add acchio
-
 ```
 
-💡 Por que Acchio?
-✅ Tipagem completa com TypeScript
-✅ Universal — funciona no Node.js e browsers
-✅ Interceptores poderosos
-✅ Cancelamento de requests
-✅ Leve e zero dependências
-✅ API familiar estilo Axios
+## 💡 Why Acchio?
 
-### 🎯 Uso Básico
+- ✅ 100% TypeScript-native
+- ✅ Works in Node.js and browsers
+- ✅ Powerful interceptors
+- ✅ Request cancellation
+- ✅ Built-in XML support (auto-parse)
+- ✅ Zero dependencies
+- ✅ Familiar Axios-style API
 
-```
-import acchio from 'acchio';
+## 🎯 Basic Usage
 
-// GET simples
-const response = await acchio.get('https://api.example.com/users');
+```javascript
+import acchio from "acchio";
+
+// Simple GET
+const response = await acchio.get("https://api.example.com/users");
 console.log(response.data);
 
-// POST com dados
-const user = await acchio.post('https://api.example.com/users', {
-  name: 'João',
-  email: 'joao@example.com'
-});
-
-// PUT para atualizar
-await acchio.put('https://api.example.com/users/1', {
-  name: 'João Silva'
+// POST with payload
+await acchio.post("https://api.example.com/users", {
+  name: "John",
+  email: "john@example.com",
 });
 ```
 
-# 🔧 Exemplos Práticos
+## 📋 Request Configuration
 
-### 🎨 Interceptores
-
+```javascript
+const config = {
+  url: "/users",
+  method: "GET",
+  baseURL: "https://api.example.com",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Bearer token",
+  },
+  params: { page: 1 },
+  timeout: 5000,
+  responseType: "json",
+};
 ```
-// Adicionar token de autenticação
-acchio.interceptors.request.use(config => {
+
+## Supported response types:
+
+- json
+- text
+- blob
+- arraybuffer
+- xml
+
+## 🔧 Interceptors
+
+```javascript
+// Automatically attach token
+acchio.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${getToken()}`;
   return config;
 });
 
-// Tratar erros globalmente
-acchio.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('😵 Ops! Algo deu errado:', error);
-    return Promise.reject(error);
-  }
-);
+// Log requests
+acchio.interceptors.request.use((config) => {
+  console.log(`🟡 ${config.method?.toUpperCase()} → ${config.url}`);
+  return config;
+});
+
+// Manipulate responses
+acchio.interceptors.response.use((response) => {
+  console.log("🟢 Status:", response.status);
+  return response;
+});
 ```
 
-### 🎪 Cancelamento de Requests
+## 🚫 Request Cancellation
 
-```
+```javascript
 const source = acchio.CancelToken.source();
 
-// Fazer request com possibilidade de cancelar
-acchio.get('/api/data', {
-  cancelToken: source.token
-});
+acchio
+  .get("/api/data", { cancelToken: source.token })
+  .then((res) => console.log(res.data))
+  .catch((err) => {
+    if (acchio.isCancel(err)) console.log("Cancelled:", err.message);
+  });
 
-// Cancelar quando quiser!
-source.cancel('Usuário cancelou a requisição');
+// Cancel request
+source.cancel("User aborted the request");
 ```
 
-### 🎭 Diferentes Ambientes
+## 🌐 XML Support
 
-#### Node.js:
-
-```
-import acchio from 'acchio';
-
-const response = await acchio.get('https://api.github.com/users');
+```javascript
+// Auto-parsed XML response
+const res = await acchio.get("/feed.xml");
+console.log(res.data);
 ```
 
-#### React:
+## 🎨 Global Configuration
 
-```
-import { useEffect, useState } from 'react';
-import acchio from 'acchio';
+```javascript
+import acchio from "acchio";
 
-function UsersList() {
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    acchio.get('/api/users').then(response => {
-      setUsers(response.data);
-    });
-  }, []);
-
-  return <div>{/* render users */}</div>;
-}
-```
-
-### 🎨 Configuração Global
-
-```
-import acchio from 'acchio';
-
-// Configurar instância global
-acchio.defaults.baseURL = 'https://api.meusite.com';
+acchio.defaults.baseURL = "https://api.mysite.com";
 acchio.defaults.timeout = 5000;
-acchio.defaults.headers.common['X-Requested-With'] = 'Acchio';
+acchio.defaults.headers.common["X-App"] = "Acchio";
+```
 
-// Ou criar instância customizada
+Create custom instances:
+
+```javascript
 const api = acchio.create({
-  baseURL: 'https://api.empresa.com',
-  timeout: 10000
+  baseURL: "https://api.company.com",
+  headers: { Authorization: "Bearer token" },
 });
 ```
 
-### 🚦 Todos os Métodos HTTP
+## 🚦 HTTP Methods
 
-```
-// GET - Buscar dados
-acchio.get('/users')
-
-// POST - Criar novo
-acchio.post('/users', { name: 'Maria' })
-
-// PUT - Atualizar completo
-acchio.put('/users/1', { name: 'Maria Silva' })
-
-// PATCH - Atualizar parcial
-acchio.patch('/users/1', { name: 'Maria' })
-
-// DELETE - Remover
-acchio.delete('/users/1')
-
-// HEAD - Apenas cabeçalhos
-acchio.head('/users')
-
-// OPTIONS - Ver opções
-acchio.options('/users')
+```javascript
+acchio.get("/users");
+acchio.post("/users", { name: "Maria" });
+acchio.put("/users/1", { name: "John" });
+acchio.patch("/users/1", { email: "a@b.com" });
+acchio.delete("/users/1");
 ```
 
-### 🎪 Tipagem com TypeScript
+## 🎪 TypeScript Support
 
-```
-import acchio from 'acchio';
+```javascript
+interface User { id: number; name: string; email: string; }
 
-// Defina a interface dos seus dados
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-// Use a tipagem!
-const response = await acchio.get<User[]>('/api/users');
-const users: User[] = response.data; // ✅ Totalmente tipado!
-
-// Request tipado
-await acchio.post<User>('/api/users', {
-  name: 'Pedro',
-  email: 'pedro@exemplo.com'
-  // age: 25        // ❌ Erro TypeScript!
-});
+const res = await acchio.get<User[]>('/api/users');
+const users = res.data; // ✅ Fully typed
 ```
 
-### 🎯 Comparação Rápida
+## 🔄 Environment Examples
 
-| 🧩 **Feature**         | ⚡ **Acchio** | 📦 **Axios** |
-| ---------------------- | ------------- | ------------ |
-| **Tipagem TypeScript** | ✅ Nativa     | ✅           |
-| **Cancelamento**       | ✅            | ✅           |
-| **Interceptores**      | ✅            | ✅           |
-| **Node.js + Browser**  | ✅            | ✅           |
-| **Zero Dependencies**  | ✅            | ❌           |
-| **Tamanho**            | 🪶 Leve       | 📦 Médio     |
+**Node.js**
 
-### 🚨 Tratamento de Erros
-
+```javascript
+const res = await acchio.get("https://api.github.com/users");
 ```
+
+**React**
+
+```javascript
+useEffect(() => {
+  const source = acchio.CancelToken.source();
+  acchio
+    .get("/api/users", { cancelToken: source.token })
+    .then((res) => setUsers(res.data))
+    .catch(console.error);
+  return () => source.cancel();
+}, []);
+```
+
+## 🚨 Error Handling
+
+```javascript
 try {
-  const response = await acchio.get('/api/data');
+  await acchio.get("/api/data");
 } catch (error) {
-  if (acchio.isCancel(error)) {
-    console.log('🎭 Request cancelado:', error.message);
-  } else if (error.response) {
-    console.log('😵 Status:', error.response.status);
-    console.log('📝 Dados:', error.response.data);
-  } else if (error.request) {
-    console.log('🌐 Sem resposta do servidor');
-  } else {
-    console.log('⚙️ Erro de configuração:', error.message);
-  }
+  if (acchio.isCancel(error)) console.log("Request cancelled");
+  else if (error.response) console.log("Status:", error.response.status);
 }
 ```
 
-### 🎪 Desempenho
+## 📊 Quick Comparison
 
-Acchio é otimizado para ser rápido e eficiente:
+| Feature            | ⚡ Acchio      | 📦 Axios  |
+| ------------------ | -------------- | --------- |
+| TypeScript Typings | ✅ Native      | ✅        |
+| Cancellation       | ✅             | ✅        |
+| Interceptors       | ✅             | ✅        |
+| Node.js + Browser  | ✅             | ✅        |
+| XML Support        | ✅             | ❌        |
+| Zero Dependencies  | ✅             | ❌        |
+| Size               | 🪶 Lightweight | 📦 Medium |
 
-📦 Bundle menor que alternativas populares
+## 📄 License
 
-🧠 Alocação mínima de memória
+**MIT** — Free for everyone! 🎉
 
-⚡ Cache inteligente de adapters
+## 🎊 Acknowledgments
 
-📄 Licença
-MIT — Use livremente! 🎉
+- ⭐ Star the project on GitHub
+- 🐛 Report issues
+- 💡 Suggest new features
 
-### 🎊 Agradecimentos
-
-Obrigado por usar Acchio!
-
-“Porque requests HTTP deveriam ser mágicos, não complicados!” 🎩✨
+_"Because HTTP requests should feel magical, not complicated!" 🎩✨_
