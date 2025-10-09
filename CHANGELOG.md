@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/fernandosoares/acchio/compare/v0.1.3...v0.2.0) (2025-10-09)
+
+
+### ✨ Features
+
+* acchio config headers with auto-complete ([350c32a](https://github.com/fernandosoares/acchio/commit/350c32ab1e3868f96916ada0a7a44be2e2d152ed))
+
 ### [0.1.3](https://github.com/fernandosoares/acchio/compare/v0.1.2...v0.1.3) (2025-10-06)
 
 
