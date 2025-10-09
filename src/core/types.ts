@@ -1,4 +1,149 @@
-// Tipos principais para o Acchio
+// Tipos específicos para valores com autocomplete FUNCIONAL
+export type ContentType =
+  | "application/json"
+  | "application/xml"
+  | "application/x-www-form-urlencoded"
+  | "multipart/form-data"
+  | "text/plain"
+  | "text/html"
+  | "text/css"
+  | "text/javascript"
+  | "application/javascript"
+  | "application/octet-stream"
+  | "image/png"
+  | "image/jpeg"
+  | "image/gif"
+  | "image/svg+xml"
+  | "audio/mpeg"
+  | "video/mp4"
+  | "application/pdf"
+  | "application/zip"
+  | (string & {});
+
+export type Authorization =
+  | "Bearer"
+  | "Basic"
+  | "Digest"
+  | "HOBA"
+  | "Mutual"
+  | "AWS4-HMAC-SHA256"
+  | (string & {});
+
+export type Accept =
+  | "application/json"
+  | "application/xml"
+  | "text/plain"
+  | "text/html"
+  | "text/css"
+  | "text/javascript"
+  | "application/javascript"
+  | "image/png"
+  | "image/jpeg"
+  | "audio/mpeg"
+  | "video/mp4"
+  | "*/*"
+  | (string & {});
+
+export type CacheControl =
+  | "no-cache"
+  | "no-store"
+  | "max-age=0"
+  | "must-revalidate"
+  | "public"
+  | "private"
+  | "no-transform"
+  | "only-if-cached"
+  | "max-age=3600"
+  | "max-age=86400"
+  | "s-maxage=3600"
+  | "stale-while-revalidate=300"
+  | (string & {});
+
+export type ContentEncoding =
+  | "gzip"
+  | "deflate"
+  | "br"
+  | "identity"
+  | "compress"
+  | (string & {});
+
+export type Connection = "keep-alive" | "close" | "upgrade" | (string & {});
+
+export type XRequestedWith = "XMLHttpRequest" | (string & {});
+
+export type XFrameOptions =
+  | "DENY"
+  | "SAMEORIGIN"
+  | "ALLOW-FROM https://example.com"
+  | (string & {});
+
+export type XContentTypeOptions = "nosniff" | (string & {});
+
+export interface AcchioHeaders {
+  // Headers com autocomplete específico
+  "A-IM"?: string;
+  Accept?: Accept;
+  "Accept-Charset"?: string;
+  "Accept-Encoding"?: ContentEncoding;
+  "Accept-Language"?: string;
+  "Accept-Datetime"?: string;
+  "Access-Control-Request-Method"?: string;
+  "Access-Control-Request-Headers"?: string;
+  Authorization?: Authorization;
+  "Cache-Control"?: CacheControl;
+  Connection?: Connection;
+  "Content-Length"?: string;
+  "Content-Type"?: ContentType;
+  Cookie?: string;
+  Date?: string;
+  Expect?: string;
+  Forwarded?: string;
+  From?: string;
+  Host?: string;
+  "If-Match"?: string;
+  "If-Modified-Since"?: string;
+  "If-None-Match"?: string;
+  "If-Range"?: string;
+  "If-Unmodified-Since"?: string;
+  "Max-Forwards"?: string;
+  Origin?: string;
+  Pragma?: string;
+  "Proxy-Authorization"?: string;
+  Range?: string;
+  Referer?: string;
+  TE?: string;
+  "User-Agent"?: string;
+  Upgrade?: string;
+  Via?: string;
+  Warning?: string;
+
+  // Headers de Autenticação
+  "WWW-Authenticate"?: string;
+  "Proxy-Authenticate"?: string;
+
+  // Headers de CORS
+  "Access-Control-Allow-Origin"?: string;
+  "Access-Control-Allow-Credentials"?: string;
+  "Access-Control-Expose-Headers"?: string;
+  "Access-Control-Max-Age"?: string;
+  "Access-Control-Allow-Methods"?: string;
+  "Access-Control-Allow-Headers"?: string;
+
+  // Headers de Segurança
+  "Strict-Transport-Security"?: string;
+  "X-Content-Type-Options"?: XContentTypeOptions;
+  "X-Frame-Options"?: XFrameOptions;
+  "X-XSS-Protection"?: string;
+  "Content-Security-Policy"?: string;
+  "X-CSRF-Token"?: string;
+  "X-Requested-With"?: XRequestedWith;
+
+  // Headers Customizados (qualquer X-*)
+  [key: `X-${string}`]: string | undefined;
+
+  // Fallback para outros headers não listados
+  [key: string]: string | undefined;
+}
 
 export type HttpMethod =
   | "GET"
@@ -15,16 +160,14 @@ export interface AcchioRequestConfig {
   url?: string;
   method?: HttpMethod;
   baseURL?: string;
-  headers?: Record<string, string>;
+  headers?: AcchioHeaders;
   params?: Record<string, any>;
   data?: any;
   timeout?: number;
   withCredentials?: boolean;
   responseType?: ResponseType;
   validateStatus?: (status: number) => boolean;
-  transformRequest?: Array<
-    (data: any, headers?: Record<string, string>) => any
-  >;
+  transformRequest?: Array<(data: any, headers?: AcchioHeaders) => any>;
   transformResponse?: Array<(data: any) => any>;
   adapter?: "node" | "browser" | "auto";
   maxRedirects?: number;
