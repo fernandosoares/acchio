@@ -3,44 +3,30 @@ name: Create Release
 on:
   push:
     tags:
-      - "v*"
+      - "v[0-9]+.[0-9]+.[0-9]+" # v1.0.0, v2.3.4, etc
+      - "v[0-9]+.[0-9]+.[0-9]+-alpha*" # v1.0.0-alpha.1
+      - "v[0-9]+.[0-9]+.[0-9]+-beta*" # v1.0.0-beta.1
 
 jobs:
   create-release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Debug info
+        run: |
+          echo "Tag: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "SHA: ${{ github.sha }}"
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          name: Acchio ${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## 🚀 Acchio ${{ steps.get_version.outputs.VERSION }}
-
-            ### 📖 Changelog
-            Veja o [CHANGELOG.md](CHANGELOG.md) para detalhes completos.
-
-            ### 📦 Instalação
-            ```bash
-            npm install acchio@${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            ### 🔧 Uso
-            ```javascript
-            import acchio from 'acchio';
-            ```
+          generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
-          files: |
-            README.md
-            CHANGELOG.md
-            package.json
