@@ -26,5 +26,14 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
+          body: |
+            🚀 **Nova versão do Acchio!**
+
+            📖 **Changelog completo:** [CHANGELOG.md](CHANGELOG.md)
+
+            ### 📦 Instalação
+            ```bash
+            npm install acchio
+            ```
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
