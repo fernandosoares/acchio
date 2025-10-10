@@ -3,9 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+" # v1.0.0, v2.3.4, etc
-      - "v[0-9]+.[0-9]+.[0-9]+-alpha*" # v1.0.0-alpha.1
-      - "v[0-9]+.[0-9]+.[0-9]+-beta*" # v1.0.0-beta.1
+      - "v*" # Qualquer tag que comece com v
 
 jobs:
   create-release:
@@ -20,9 +18,9 @@ jobs:
 
       - name: Debug info
         run: |
-          echo "Tag: ${{ github.ref }}"
-          echo "Event: ${{ github.event_name }}"
-          echo "SHA: ${{ github.sha }}"
+          echo "🎯 Tag: ${{ github.ref }}"
+          echo "📝 Event: ${{ github.event_name }}"
+          echo "🏷️  Tag Name: ${GITHUB_REF#refs/tags/}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
