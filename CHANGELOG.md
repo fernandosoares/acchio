@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.4](https://github.com/fernandosoares/acchio/compare/v0.2.3...v0.2.4) (2025-10-10)
+
+
+### 🐛 Bug Fixes
+
+* auto release description ([377a739](https://github.com/fernandosoares/acchio/commit/377a739d635ebec4bcbf3e4fc6d6139a8f992bfb))
+
 ### [0.2.3](https://github.com/fernandosoares/acchio/compare/v0.99.0-test...v0.2.3) (2025-10-10)
 
 
