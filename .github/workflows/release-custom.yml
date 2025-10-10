@@ -27,12 +27,10 @@ jobs:
         with:
           generate_release_notes: true
           body: |
-            🚀 **Nova versão do Acchio!**
+            🚀 **New version of Acchio!**
 
-            📖 **Changelog completo:** [CHANGELOG.md](CHANGELOG.md)
-
-            ### 📦 Instalação
-            ```bash
+            ### 📦 Installation
+            ```javascript
             npm install acchio
             ```
           draft: false
