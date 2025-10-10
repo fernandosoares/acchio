@@ -1,16 +1,14 @@
+import { BrowserAdapter } from "../adapters/BrowserAdapter";
+import { createNodeAdapter } from "../adapters/NodeAdapter";
+import { mergeConfig } from "../utils/helpers";
+import { InterceptorManager } from "../utils/interceptors";
 import {
   AcchioInstance,
   AcchioRequestConfig,
   AcchioResponse,
-  HttpMethod,
   DEFAULT_CONFIG,
 } from "./types";
-import { InterceptorManager } from "../utils/interceptors";
-import { mergeConfig, createError } from "../utils/helpers";
-import { BrowserAdapter } from "../adapters/BrowserAdapter";
-import { createNodeAdapter } from "../adapters/NodeAdapter";
 
-// Detecção de ambiente que não quebra o bundle
 function isNodeEnvironment(): boolean {
   return (
     typeof process !== "undefined" &&
@@ -28,7 +26,6 @@ function isBrowserEnvironment(): boolean {
 }
 
 function getAdapter(config: AcchioRequestConfig): any {
-  // Se o adapter foi especificado explicitamente
   if (config.adapter === "browser") {
     return new BrowserAdapter();
   }
@@ -40,7 +37,6 @@ function getAdapter(config: AcchioRequestConfig): any {
     return createNodeAdapter();
   }
 
-  // Detecção automática
   if (isBrowserEnvironment()) {
     return new BrowserAdapter();
   }
@@ -49,7 +45,6 @@ function getAdapter(config: AcchioRequestConfig): any {
     return createNodeAdapter();
   }
 
-  // Fallback para BrowserAdapter (mais comum)
   console.warn("Environment detection failed, falling back to BrowserAdapter");
   return new BrowserAdapter();
 }
@@ -84,7 +79,6 @@ export class AcchioInstanceImpl implements AcchioInstance {
   async request<T = any, R = AcchioResponse<T>>(
     config: AcchioRequestConfig
   ): Promise<R> {
-    // Merge com defaults
     const mergedConfig = mergeConfig(this.defaults, config);
 
     // Check for cancellation before starting
@@ -92,7 +86,6 @@ export class AcchioInstanceImpl implements AcchioInstance {
       mergedConfig.cancelToken.throwIfRequested();
     }
 
-    // Apply request interceptors
     let requestConfig = mergedConfig;
 
     const requestInterceptorChain: any[] = [];
@@ -109,7 +102,6 @@ export class AcchioInstanceImpl implements AcchioInstance {
       promise = promise.then(fulfilled, rejected);
     }
 
-    // Add cancellation check after interceptors
     promise = promise.then((config) => {
       if (config.cancelToken) {
         config.cancelToken.throwIfRequested();
@@ -120,11 +112,9 @@ export class AcchioInstanceImpl implements AcchioInstance {
     try {
       requestConfig = await promise;
 
-      // Make the request with cancellation support
       let response: AcchioResponse;
 
       if (requestConfig.cancelToken) {
-        // Wrap the adapter request with cancellation
         const adapterRequest = this.adapter.request(requestConfig);
         const cancelPromise = new Promise<never>((_, reject) => {
           requestConfig.cancelToken!.promise.then(reject);
@@ -135,45 +125,51 @@ export class AcchioInstanceImpl implements AcchioInstance {
         response = await this.adapter.request(requestConfig);
       }
 
-      // Apply response interceptors
-      const responseInterceptorChain: any[] = [];
+      let finalResponse = response;
+
+      const responseInterceptors: Array<{
+        fulfilled?: (
+          value: AcchioResponse
+        ) => AcchioResponse | Promise<AcchioResponse>;
+        rejected?: (error: any) => any;
+      }> = [];
       this.interceptors.response.forEach((interceptor) => {
-        responseInterceptorChain.push(
-          interceptor.fulfilled,
-          interceptor.rejected
-        );
+        responseInterceptors.push(interceptor);
       });
 
-      let responsePromise: Promise<AcchioResponse> = Promise.resolve(response);
-
-      while (responseInterceptorChain.length) {
-        const fulfilled = responseInterceptorChain.shift();
-        const rejected = responseInterceptorChain.shift();
-
-        responsePromise = responsePromise.then(fulfilled, rejected);
+      for (const interceptor of responseInterceptors) {
+        if (interceptor.fulfilled) {
+          finalResponse = await interceptor.fulfilled(finalResponse);
+        }
       }
 
-      const finalResponse = await responsePromise;
       return finalResponse as R;
     } catch (error) {
-      // Apply response error interceptors
-      const responseInterceptorChain: any[] = [];
+      let finalError = error;
+      let errorHandled = false;
+
+      const responseInterceptors: Array<{
+        fulfilled?: (
+          value: AcchioResponse
+        ) => AcchioResponse | Promise<AcchioResponse>;
+        rejected?: (error: any) => any;
+      }> = [];
       this.interceptors.response.forEach((interceptor) => {
-        if (interceptor.rejected) {
-          responseInterceptorChain.push(undefined, interceptor.rejected);
-        }
+        responseInterceptors.push(interceptor);
       });
 
-      let errorPromise = Promise.reject(error);
-
-      while (responseInterceptorChain.length) {
-        const rejected = responseInterceptorChain.pop();
-        const fulfilled = responseInterceptorChain.pop();
-
-        errorPromise = errorPromise.then(fulfilled, rejected);
+      for (const interceptor of responseInterceptors) {
+        if (!errorHandled && interceptor.rejected) {
+          try {
+            finalError = await interceptor.rejected(finalError);
+            errorHandled = true;
+          } catch (newError) {
+            finalError = newError;
+          }
+        }
       }
 
-      throw await errorPromise.catch((err) => err);
+      throw finalError;
     }
   }
 
