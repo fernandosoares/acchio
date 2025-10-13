@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/fernandosoares/acchio/compare/v0.3.4...v1.0.0) (2025-10-13)
+
 ### [0.3.4](https://github.com/fernandosoares/acchio/compare/v0.3.3...v0.3.4) (2025-10-13)
 
 
