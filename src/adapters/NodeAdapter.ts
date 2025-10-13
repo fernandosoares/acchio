@@ -1,13 +1,10 @@
 import { Adapter, AcchioRequestConfig, AcchioResponse } from "../core/types";
 
-// Função factory que só carrega o NodeAdapter quando necessário
 export function createNodeAdapter(): Adapter {
-  // Verifica se estamos em ambiente Node.js
   if (typeof process === "undefined" || !process.versions?.node) {
     throw new Error("NodeAdapter can only be used in Node.js environment");
   }
 
-  // Dynamic import das dependências Node.js
   const { URL } = require("url");
   const https = require("https");
   const http = require("http");
@@ -49,15 +46,12 @@ export function createNodeAdapter(): Adapter {
               } catch {
                 // Mantém como string se falhar
               }
-            }
-            // ✅ ADICIONADO: XML retorna como string no Node.js (sem parse)
-            else if (
+            } else if (
               config.responseType === "xml" ||
               ((contentType?.includes("application/xml") ||
                 contentType?.includes("text/xml")) &&
                 !config.responseType)
             ) {
-              // No Node.js, sem xmldom, retornamos como string
               responseData = data;
             }
 
@@ -70,7 +64,21 @@ export function createNodeAdapter(): Adapter {
               request: req,
             };
 
-            resolve(response);
+            // ✅ CORREÇÃO: Verificar se o status HTTP indica erro
+            if (res.statusCode && res.statusCode >= 400) {
+              // Para status 4xx/5xx, rejeitar a Promise
+              const error = this.createError(
+                `Request failed with status code ${res.statusCode}`,
+                config,
+                `HTTP_${res.statusCode}`,
+                req,
+                response
+              );
+              reject(error);
+            } else {
+              // Para status 2xx/3xx, resolver normalmente
+              resolve(response);
+            }
           });
         });
 
@@ -93,6 +101,23 @@ export function createNodeAdapter(): Adapter {
 
         req.end();
       });
+    }
+
+    // ✅ Adicionar método createError para consistência
+    private createError(
+      message: string,
+      config: AcchioRequestConfig,
+      code?: string,
+      request?: any,
+      response?: AcchioResponse
+    ) {
+      const error = new Error(message) as any;
+      error.config = config;
+      error.code = code;
+      error.request = request;
+      error.response = response;
+      error.isAcchioError = true;
+      return error;
     }
   }
 

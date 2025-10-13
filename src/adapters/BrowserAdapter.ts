@@ -32,7 +32,6 @@ export class BrowserAdapter implements Adapter {
       let data: any;
       const contentType = response.headers.get("content-type");
 
-      // Handle different response types
       if (config.responseType === "text") {
         data = await response.text();
       } else if (config.responseType === "blob") {
@@ -43,7 +42,6 @@ export class BrowserAdapter implements Adapter {
         const text = await response.text();
         data = this.parseXML(text);
       } else {
-        // Default: try to parse as JSON or fallback to text
         const text = await response.text();
         if (contentType?.includes("application/json")) {
           try {
@@ -88,12 +86,10 @@ export class BrowserAdapter implements Adapter {
 
       return acchioResponse;
     } catch (error) {
-      // Se já for um erro do Acchio, apenas propague
       if (error && typeof error === "object" && "isAcchioError" in error) {
         throw error;
       }
 
-      // Para outros erros (network, timeout, etc), crie um erro do Acchio
       throw this.createError(
         error instanceof Error ? error.message : "Network Error",
         config,
