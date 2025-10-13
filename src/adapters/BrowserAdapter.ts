@@ -75,7 +75,6 @@ export class BrowserAdapter implements Adapter {
         request: response,
       };
 
-      // ✅ CORREÇÃO: Verificar se o status HTTP indica erro
       if (!response.ok) {
         // Para status 4xx/5xx, criar um erro
         throw this.createError(
@@ -151,7 +150,6 @@ export class BrowserAdapter implements Adapter {
     }
   }
 
-  // ✅ NOVO: Método para criar erros consistentes
   private createError(
     message: string,
     config: AcchioRequestConfig,
